@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const getFirebase = require("./firebase/getData");
+const setFirebase = require("./firebase/setData");
 const compression = require('compression');
 const jwt = require('jsonwebtoken');
 
@@ -43,16 +44,20 @@ app.post("/createNewUser/", function(req, res) {
             email: req.body.email,
             emailVerified: false,
             password: req.body.password,
-            displayName: req.body.username,
+            displayName: req.body.firstName + req.body.lastName,
             disabled: false,
         }).then((userRecord) => {
-            //setFirebase.createNewUser(userRecord);
+            req.body.uid = userRecord.uid;
+            setFirebase.createNewUser(req);
+
             res.send({
                 success: true,
                 message: 'User Created SuccessFully'
             })
+
         })
         .catch((error) => {
+            console.log(error);
             res.send({
                 success: false,
                 statusCode: 500,
@@ -81,30 +86,6 @@ app.post("/createToken/", function(req, res) {
 })
 app.get("/verifyToken/", jwtMW, function(req, res) {
     res.send(req.user);
-})
-app.post("/createNewUser/", function(req, res) {
-    let token = "";
-    admin.auth().createUser({
-            email: req.body.email,
-            emailVerified: false,
-            password: req.body.password,
-            displayName: req.body.username,
-            disabled: false,
-        }).then((userRecord) => {
-            //setFirebase.createNewUser(userRecord);
-            res.send({
-                success: true,
-                message: 'User Created SuccessFully'
-            })
-        })
-        .catch((error) => {
-            res.send({
-                success: false,
-                statusCode: 500,
-                message: error == null || isEmptyObject(error) ? "Some error at the server" : error,
-            })
-        })
-
 })
 app.get("/getAllData/", jwtMW, function(req, res) {
     getFirebase.getUserInfo(req.headers.uid, function(err, data) {
