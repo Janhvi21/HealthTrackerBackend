@@ -57,7 +57,6 @@ app.post("/createNewUser/", function(req, res) {
 
         })
         .catch((error) => {
-            console.log(error);
             res.send({
                 success: false,
                 statusCode: 500,
@@ -66,8 +65,29 @@ app.post("/createNewUser/", function(req, res) {
         })
 
 })
+app.post("/updateUser/", function(req, res) {
+    setFirebase.updateUserInfo(req, function(err, data) {
+        res.send(data);
+    })
+})
+app.post("/updateUserHealthInfo/", function(req, res) {
+    setFirebase.updateUserHealthInfo(req, function(err, data) {
+        res.send(data);
+    })
+})
 app.get("/allUsers", function(req, res) {
     getFirebase.getallUsers(req, function(err, data) {
+        res.send(data);
+    })
+});
+app.post("/addCalorieConsumption/", function(req, res) {
+    setFirebase.addCalorieConsumption(req, function(err, data) {
+        res.send(data);
+    })
+});
+
+app.get("/getCalorieConsumption/", function(req, res) {
+    getFirebase.getCalorieConsumption(req, function(err, data) {
         res.send(data);
     })
 });
@@ -87,8 +107,13 @@ app.post("/createToken/", function(req, res) {
 app.get("/verifyToken/", jwtMW, function(req, res) {
     res.send(req.user);
 })
-app.get("/getAllData/", jwtMW, function(req, res) {
+app.get("/getUserInfo/", jwtMW, function(req, res) {
     getFirebase.getUserInfo(req.headers.uid, function(err, data) {
+        res.send(data);
+    })
+})
+app.get("/getUserHealthInfo/", jwtMW, function(req, res) {
+    getFirebase.getUserHealthInfo(req.headers.uid, function(err, data) {
         res.send(data);
     })
 })
