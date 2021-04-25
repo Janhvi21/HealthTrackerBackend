@@ -86,6 +86,11 @@ app.post("/addCalorieConsumption/", function(req, res) {
     })
 });
 
+app.post("/deleteMeal/", function(req, res) {
+    setFirebase.deleteMeal(req, function(err, data) {
+        res.send(data);
+    })
+});
 app.get("/getCalorieConsumption/", function(req, res) {
     getFirebase.getCalorieConsumption(req, function(err, data) {
         res.send(data);

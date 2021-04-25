@@ -96,9 +96,65 @@ module.exports = {
                 firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + dt + '/TotalCaloriePerDay').set(exp);
 
             });
+            firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + dt + '/' + req.body.params.Category).once('value').then((snapshot) => {
+                let exp = 0;
+                exp = snapshot.val();
+                exp = exp + Number(req.body.params.Calorie);
+                firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + dt + '/' + req.body.params.Category).set(exp);
+
+            });
             return firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + dt).once('value').then((snapshot) => {
                 callback(null, snapshot.val())
             });
+        } catch (error) {
+            callback(null, {
+                "statusCode": 500,
+                "message": "Some error at the server",
+            })
+        }
+    },
+    deleteMeal: function(req, callback) {
+
+        try {
+            var userId = req.headers.uid;
+            var calorie;
+            var Category;
+            firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + req.body.params.date + '/' + req.body.params.index).once('value').then((snapshot) => {
+
+                calorie = snapshot.val().Calorie;
+                Category = snapshot.val().Category;
+                var intake = firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + req.body.params.date + '/' + req.body.params.index);
+
+                firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + req.body.params.date).once('value').then((snapshot) => {
+
+                    let total = 0;
+                    total = snapshot.val().TotalCaloriePerDay;
+                    total = total - calorie;
+                    firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + req.body.params.date + '/' + "TotalCaloriePerDay").set(total);
+                    let categoryTotal = 0;
+                    switch (Category) {
+                        case "Breakfast":
+                            categoryTotal = snapshot.val().Breakfast - calorie;
+                            break;
+                        case "Lunch":
+                            categoryTotal = snapshot.val().Lunch - calorie;
+                            break;
+                        case "Snacks":
+                            categoryTotal = snapshot.val().Snacks - calorie;
+                            break;
+                        case "Dinner":
+                            categoryTotal = snapshot.val().Dinner - calorie;
+                            break;
+
+                    }
+                    firebase.database().ref('/UserCalorieConsumption/' + userId + '/' + req.body.params.date + '/' + Category).set(categoryTotal);
+                });
+                intake.remove();
+            });
+            callback(null, {
+                "statusCode": 200,
+                "message": "Meal Deleted Successfully",
+            })
         } catch (error) {
             callback(null, {
                 "statusCode": 500,
